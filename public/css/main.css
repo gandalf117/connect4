@@ -46,6 +46,51 @@ html, body {
 /***********************************/
 
 .token1 {
-    background: url(../images/tokens/token1.png);
-    background-size: 100% 100%;
-}
+     background: url(../images/tokens/token1.png);
+     background-size: 100% 100%;
+ }
+
+ .token2 {
+     background: url(../images/tokens/token3.png);
+     background-size: 100% 100%;
+ }
+
+ .token3 {
+     background: url(../images/tokens/token2.png);
+     background-size: 100% 100%;
+ }
+
+ .token4 {
+     background: url(../images/tokens/token4.png);
+     background-size: 100% 100%;
+ }
+
+ .token5 {
+     background: url(../images/tokens/token-b.png);
+     background-size: 100% 100%;
+ }
+
+ .token6 {
+     background: url(../images/tokens/token-g.png);
+     background-size: 100% 100%;
+ }
+
+ .token7 {
+     background: url(../images/tokens/token-o.png);
+     background-size: 100% 100%;
+ }
+
+ .token8 {
+     background: url(../images/tokens/token-r.png);
+     background-size: 100% 100%;
+ }
+
+ .token9 {
+     background: url(../images/tokens/token-w.png);
+     background-size: 100% 100%;
+ }
+
+ .token10 {
+     background: url(../images/tokens/token-y.png);
+     background-size: 100% 100%;
+ }
