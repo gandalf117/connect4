@@ -21,7 +21,7 @@
         <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
         <script src="{{ URL::to('/js/custom-functions.js') }}"></script>
-        <script src="{{ URL::to('/js/main.js') }}"></script>
+        <script src="{{ URL::to('/js/home.js') }}"></script>
 
         <link rel="stylesheet" type="text/css" href="{{ URL::to('/css/main.css') }}">
 

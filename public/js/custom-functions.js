@@ -32,11 +32,7 @@ function custom_console(msg) {
 function show_preloader() {
 
 	$('body').append($('<div>').attr('id', 'preloader'));
-
-	//disable clicking on the main table
-	if($('.table').length > 0) {
-		$('.table').append($('<div>').attr('id', 'preloader-disabler'));
-	}
+	$('body').append($('<div>').attr('id', 'preloader-disabler'));
 
 }
 
@@ -71,6 +67,46 @@ function image_loader(pointer, img_param) {
 		pointer.append(img);
 
 	});
+
+}
+
+// ********************************************************************************************************************************
+// number manipulators
+// first two functions check if a parameter is an integer or a float; it the parameter doesn't exists it doesn't perform the check
+// ********************************************************************************************************************************
+
+function is_int(n) {
+
+	var status = true;
+
+	if(n) {
+
+		status = (Number(n) == n && n % 1 === 0);
+
+	}
+
+	return status;
+
+}
+
+function is_float(n) {
+
+	var status = true;
+
+	if(n) {
+
+		status = (n == Number(n) && n % 1 !== 0);
+
+	}
+
+	return status;
+
+}
+
+//rounds to the 3rd float point
+function round_num(num) {
+
+	return Math.round(num * 1000) / 1000;
 
 }
 
@@ -123,42 +159,6 @@ function capitalizeFirstLetter(string) {
 
 	return string.charAt(0).toUpperCase() + string.slice(1);
 
-}
-
-function show_center_window(url, title, w, h) {
-    // Fixes dual-screen position                         Most browsers      Firefox
-    var dualScreenLeft = window.screenLeft != undefined ? window.screenLeft : screen.left;
-    var dualScreenTop = window.screenTop != undefined ? window.screenTop : screen.top;
-
-    var width = window.innerWidth ? window.innerWidth : document.documentElement.clientWidth ? document.documentElement.clientWidth : screen.width;
-    var height = window.innerHeight ? window.innerHeight : document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height;
-
-    var left = ((width / 2) - (w / 2)) + dualScreenLeft;
-    var top = ((height / 2) - (h / 2)) + dualScreenTop;
-    var newWindow = window.open(url, title, 'scrollbars=no, width=' + w + ', height=' + h + ', top=' + top + ', left=' + left);
-
-    // Puts focus on the newWindow
-    if (window.focus) {
-        newWindow.focus();
-    }
-	
-	//refreshes the parent window when it gets closed
-	newWindow.onload = function() {
-		
-		var user_obj = $(newWindow.document.documentElement).find('pre').html();
-		
-		if(user_obj) {
-			
-			newWindow.close();
-			
-			newWindow.opener.parent_facebook_callback(user_obj);
-				
-		}
-		
-		
-		
-    }
-	
 }
 
 $.ajaxSetup({
@@ -340,376 +340,85 @@ function convert_date2(str, months) {
 	
 }
 
-//function used for exporting
 
-function export_items_func(items, titles, columns, appends, file_name) {
-	
-	var csvContent = '';
+//********************************************************************************************************************************
+// POPUP Functions
+//********************************************************************************************************************************
 
-	//add the titles of the columns and before that check that all the titles are provided
-	if(titles.length == columns.length) {
-		
-		//convert the array to a string and mark the end
-		csvContent += custom_html_entity_decode(titles.join(';')) + '\n';
-		
-	}
-		
-	items.forEach(function(item, index){
+//********************************************************************************************************************************
+//closes the currently opened popup and the overlay
+//********************************************************************************************************************************
 
-		var infoArray = [];
+function closePopupOverlay() {
 
-		//try to find every column and append its value; if not found append nothing
-		for(var i=0; i<columns.length; i++) {
-			
-			//check if it is not an object property
-			var col_name = columns[i].split('|');
+	$('#overlay').fadeOut(500, function(){ $('#overlay').remove(); });
 
-			if(item.hasOwnProperty(col_name[0])) {
-				
-				var content = '';
-				
-				if(col_name[1] && item.hasOwnProperty(col_name[1])) {
-				
-					content = item[col_name[0]][col_name[1]];
-				
-				} else {
-					
-					if(appends[i] == 'date') {
-						
-						content = item[col_name[0]] && item[col_name[0]].indexOf('0000') >= 0 ? '' : item[col_name[0]] ? item[col_name[0]].split(' ')[0] : item[col_name[0]];
-					
-					} else {
-						
-						var temp_content;
-						
-						//if it is an array (or assoc array) use the first value of it
-						if(typeof item[col_name[0]] === 'object') {
-							
-							for(var key in item[col_name[0]]) {
-							
-								if(item[col_name[0]][key]) { temp_content = item[col_name[0]][key]; }
-								break;
-								
-							}
-							
-						} else {
-							
-							temp_content = item[col_name[0]];
-							
-						}
-						
-						content = temp_content;
-						
-					}
-					
-				}
-				
-				//append text if any
-				if(appends[i] && appends[i] != 'date') { content += appends[i]; }
-				
-				infoArray.push(content);
-				
-			}
-		
-		}
-	   
-		//convert the array to a string and mark the end
-		csvContent += infoArray.join(';') + '\n';
-
-	});
-
-	//var encodedUri = encodeURI(csvContent);
-	var fileName = file_name + '.csv';
-	
-	$('.export_btn').unbind();
-	
-	var link = $('.export_btn');
-	//link.attr('href', encodedUri);
-	
-	if(window.navigator.msSaveOrOpenBlob) {
-		var fileData = [csvContent];
-		blobObject = new Blob(fileData);
-		link.click(function(){
-			window.navigator.msSaveOrOpenBlob(blobObject, fileName);
-		});
-	} else {
-		var url = 'data:text/csv;sep=;charset=utf-8,%EF%BB%BF' + encodeURI(csvContent);
-		link.attr('href', url);
-		link.attr('download', fileName);
-	}
-	
 }
 
-//functions used for sorting
-//it creates a small arrow icon next to the link if the structure requirements are met
-//on clicking that link it sorts the table in descending and ascending order
-//NOTE! relies that redraw_table function is defined which is specific for every page
+//********************************************************************************************************************************
+// makes the whole popup draggable by id and updates the pointer
+//********************************************************************************************************************************
 
-var sort_flag = false;
-var compare_prop = '';
+function makeDraggable(id) {
 
-function sorting_func(link_id, ptr) {
-	
-	//it is important that it finds the id under the current link
-	var curr_sort_ptr = ptr.find(link_id);
-	
-	if(curr_sort_ptr.length) {
-		
-		//get the property on which it is going to compare
-		compare_prop = $(link_id).closest('a').attr('href');
-			
-		if(sort_flag) {
-			
-			sort_flag = false;
-			
-			curr_sort_ptr.removeClass('fa-sort-asc').addClass('fa-sort-desc');
-			
-			all_items.sort( compare_asc );
-			
-			redraw_table();
-			
-		} else {
-		
-			sort_flag = true;
-			
-			curr_sort_ptr.removeClass('fa-sort-desc').addClass('fa-sort-asc');	
-			
-			all_items.sort( compare_desc );
-			
-			redraw_table();
-			
-		}
-		
-	} else {
-		
-		$(link_id).remove();
-		
-		sort_flag = true;
-		
-		ptr.append($('<i>').addClass('fa fa-sort-asc fa-fw').attr('id', 'curr-sort'));
-		
-		//get the property on which it is going to compare
-		compare_prop = $(link_id).closest('a').attr('href');
-		
-		all_items.sort( compare_desc );
-			
-		redraw_table();
-		
-	}
-	
-}
+	$('#' + id).draggable();
 
-function compare_asc(a,b) {
-	
-	var temp = compare_prop.split('|');
-	var prop = temp[0];
-	var prop_type = temp[1];
-	var prop2 = temp[2];
-	
-	if(prop2) {
-		
-		if(a.hasOwnProperty(prop) && a[prop].hasOwnProperty(prop2) && b.hasOwnProperty(prop) && b[prop].hasOwnProperty(prop2)) {
-			
-			//if set as integer compare it as integers
-			if(prop_type == 'integer') {
-				
-				if (parseInt(a[prop][prop2]) > parseInt(b[prop][prop2])) {
-					return -1;
-				}
-				
-				if (parseInt(a[prop][prop2]) < parseInt(b[prop][prop2])) {
-					return 1;
-				}
-				
-			} else {
-			
-				if (a[prop][prop2] > b[prop][prop2]) {
-					return -1;
-				}
-				
-				if (a[prop][prop2] < b[prop][prop2]) {
-					return 1;
-				}
-			
-			}
-			
-		} else {
-			
-			return 0;
-			
-		}
-		
-	} else {
-		
-		if(a.hasOwnProperty(prop) && b.hasOwnProperty(prop)) {
-			
-			if(prop_type == 'integer') {
-				
-				if (parseInt(a[prop]) > parseInt(b[prop])) {
-					return -1;
-				}
-				
-				if (parseInt(a[prop]) < parseInt(b[prop])) {
-					return 1;
-				}				
-				
-			} else {
-			
-				if (a[prop] > b[prop]) {
-					return -1;
-				}
-				
-				if (a[prop] < b[prop]) {
-					return 1;
-				}
-				
-			}
-			
-		} else {
-			
-			return 0;
-			
-		}
-		
-	}
-	
-}
+	// only changes the cursor
 
-function compare_desc(a,b) {
-	
-	var temp = compare_prop.split('|');
-	var prop = temp[0];
-	var prop_type = temp[1];
-	var prop2 = temp[2];
-	
-	if(prop2) {
-		
-		if(a.hasOwnProperty(prop) && a[prop].hasOwnProperty(prop2) && b.hasOwnProperty(prop) && b[prop].hasOwnProperty(prop2)) {
-			
-			//if set as integer compare it as integers
-			if(prop_type == 'integer') {
-				
-				if (parseInt(a[prop][prop2]) < parseInt(b[prop][prop2])) {
-					return -1;
-				}
-				
-				if (parseInt(a[prop][prop2]) > parseInt(b[prop][prop2])) {
-					return 1;
-				}
-				
-			} else {
-			
-				if (a[prop][prop2] < b[prop][prop2]) {
-					return -1;
-				}
-				
-				if (a[prop][prop2] > b[prop][prop2]) {
-					return 1;
-				}
-			
-			}
-			
-		} else {
-			
-			return 0;
-			
-		}
-		
-	} else {
-		
-		if(a.hasOwnProperty(prop) && b.hasOwnProperty(prop)) {
-			
-			if(prop_type == 'integer') {
-				
-				if (parseInt(a[prop]) < parseInt(b[prop])) {
-					return -1;
-				}
-				
-				if (parseInt(a[prop]) > parseInt(b[prop])) {
-					return 1;
-				}				
-				
-			} else {
-			
-				if (a[prop] < b[prop]) {
-					return -1;
-				}
-				
-				if (a[prop] > b[prop]) {
-					return 1;
-				}
-				
-			}
-			
-		} else {
-			
-			return 0;
-			
-		}
-		
-	}
-	
-}
+	$('#' + id).on("mousedown", function () {
 
-//custom filtering function that filters a table based on a table id, a number of a column and its value
+		$(':focus').blur();
 
-function filter_table(tbl_id, filter_col, filter_name) {
+		$(this).addClass("mouseDownCursor");
 
-	var ptr = $(tbl_id + ' tbody');
+	}).on("mouseup", function () {
 
-	ptr.find('tr').each(function() {
-
-		if(filter_name.trim() <=0 || $(this).find('td:eq('+ filter_col +')').text().trim() == filter_name.trim()) {
-
-			$(this).show();
-
-		} else {
-
-			$(this).hide();
-
-		}
+		$(this).removeClass("mouseDownCursor");
 
 	});
 
 }
 
-//used for custom messages on input fields
+//********************************************************************************************************************************
+// create and append the popup
+//********************************************************************************************************************************
 
-(function (exports) {
+function createPopup(title_param, content_param, btns_param) {
 
-	function valOrFunction(val, ctx, args) {
-		if (typeof val == "function") {
-			return val.apply(ctx, args);
-		} else {
-			return val;
-		}
+	//create the popup box in the overlay
+
+	var overlay = $('<div>').attr('id','overlay');
+
+	$('body').append( overlay );
+
+	overlay.fadeIn(500);
+
+	//add the title
+
+	var popup = $('<div>').appendTo(overlay).attr('id', 'custom-popup').addClass('popup');
+
+	$('<div>').appendTo(popup).addClass('title').text( title_param );
+
+	//add the content
+
+	var content = $('<div>').appendTo(popup).addClass('content');
+
+	$('<div>').appendTo(content).append( content_param );
+
+	//add the buttons
+
+	var btns = $('<div>').appendTo(content).addClass('btns');
+
+	for(var btn in btns_param) {
+
+		$('<a>').appendTo(btns).addClass('btn').text(btns_param[btn].txt).on('click', btns_param[btn].action);
+
 	}
 
-	function InvalidInputHelper(input, options) {
+	popup.css('margin-top', popup.height()/-2 );
 
-		input.setCustomValidity(valOrFunction(options.defaultText, window, [input]));
+	// makes the whole popup draggable
 
-		function changeOrInput() {
-			if (input.value == "") {
-				input.setCustomValidity(valOrFunction(options.emptyText, window, [input]));
-			} else {
-				input.setCustomValidity("");
-			}
-		}
+	makeDraggable('custom-popup');
 
-		function invalid() {
-			if (input.value == "") {
-				input.setCustomValidity(valOrFunction(options.emptyText, window, [input]));
-			} else {
-				input.setCustomValidity(valOrFunction(options.invalidText, window, [input]));
-			}
-		}
-
-		input.addEventListener("change", changeOrInput);
-		input.addEventListener("input", changeOrInput);
-		input.addEventListener("invalid", invalid);
-	}
-
-	exports.InvalidInputHelper = InvalidInputHelper;
-
-})(window);
+}

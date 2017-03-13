@@ -175,7 +175,7 @@ $(function() {
                 dataType : 'json',
 
                 error : function(xmlhttprequest, textstatus, message) {
-
+                    $('#note').text('Something went wrong on the server!');
                 },
 
                 success : function(game) {
