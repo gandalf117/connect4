@@ -74,6 +74,50 @@ $(function() {
 
     }
 
+    /*function columnClickEvent(ind) {
+
+        var curr_col = board.find('.col:eq('+ind+')');
+
+        var col_len = getColLength(ind);
+
+        var col_pos = getColNextPos(ind);
+
+        var speed = default_drop_speed;
+
+        //proceed only if there is more space on this column
+
+        if(col_pos >= 0) {
+
+            var h = curr_col.height() - default_h * (col_len + 1);
+
+            var token_temp = board.find('.token-temp').removeClass('token-temp-hover');
+            var token_cl = token_temp.attr('data-cl');
+
+            token_temp.animate({
+                top: h
+            }, speed, function() {
+
+                token_temp.remove();
+
+                board_obj[ind][col_pos] = 1;
+
+                var new_token = $('<div>').addClass(token_cl).css({ width: default_token_w + 'px', height: default_token_h + 'px', 'margin-top': default_token_t + 'px', 'margin-left': default_token_l + 'px' });
+
+                curr_col.find('.cell:eq('+col_pos+')').append(new_token);
+
+                //reset token icon
+                if(token_class == 'token1') { token_class = 'token2'; } else { token_class = 'token1'; }
+
+                //reset the column select class
+                curr_col.removeClass('selected');
+                columnHoverEvent(ind);
+
+            });
+
+        }
+
+    }*/
+
     function columnClickEvent(ind) {
 
         var curr_col = board.find('.col:eq('+ind+')');
@@ -91,7 +135,7 @@ $(function() {
             var h = curr_col.height() - default_h * (col_len + 1);
 
             var token_temp = board.find('.token-temp').removeClass('token-temp-hover');
-            var token_class = token_temp.attr('data-cl');
+            var token_cl = token_temp.attr('data-cl');
 
             token_temp.animate({
                 top: h
@@ -99,9 +143,14 @@ $(function() {
 
                 token_temp.remove();
 
-                board_obj[ind][col_pos] = 1;
+                var tid;
 
-                var new_token = $('<div>').addClass(token_class).css({ width: default_token_w + 'px', height: default_token_h + 'px', 'margin-top': default_token_t + 'px', 'margin-left': default_token_l + 'px' });
+                //NOTE: temporary - reset token icon and id
+                if(token_class == 'token1') { token_class = 'token2'; tid = 1; } else { token_class = 'token1'; tid = 2; }
+
+                board_obj[ind][col_pos] = tid;
+
+                var new_token = $('<div>').addClass(token_cl).css({ width: default_token_w + 'px', height: default_token_h + 'px', 'margin-top': default_token_t + 'px', 'margin-left': default_token_l + 'px' });
 
                 curr_col.find('.cell:eq('+col_pos+')').append(new_token);
 
@@ -109,9 +158,18 @@ $(function() {
                 curr_col.removeClass('selected');
                 columnHoverEvent(ind);
 
+                verify(ind, col_pos, tid);
+
             });
 
         }
+
+    }
+
+    function verify(col_ind, cell_ind, tid) {
+
+        //check row
+        //if(board_obj[col_ind-1][cell_ind])
 
     }
 
