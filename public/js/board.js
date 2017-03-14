@@ -1,24 +1,74 @@
-$(function() {
 
-    var params = { game_id: 1023 , size_x: 7, size_y: 6 };
-
-    var board = $('#board'),
-        board_obj = [],
-        token_class = 'token1',
-        default_w = 50,
-        default_h = 50,
-        default_token_w = 40,
-        default_token_h = 40,
+    var curr_game,
+        curr_user_id,
+        curr_user_key,
+        board,
+        board_obj,
+        token_class,
+        default_w = 75,
+        default_h = 75,
+        default_token_w = 65,
+        default_token_h = 65,
         default_token_t = (default_w - default_token_w) /2, //token top margin, helps in centering it
         default_token_l = (default_h - default_token_h) /2, //token left margin, helps in centering it
         default_drop_speed = 200;   //drop speed per cell in milliseconds
 
-    function createBoard(params) {
+    function getGameUser(id) {
 
-        var x = params.size_x,
-            y = params.size_y,
+        for(var key in curr_game.users) {
+
+            if(curr_game.users[key].id == id) {
+
+                return curr_game.users[key];
+
+            }
+
+        }
+
+        return null;
+
+    }
+
+    function getNextUser(id) {
+
+        var len = curr_game.users.length;
+
+        for(var i=0; i<len; i++) {
+
+            if(curr_game.users[i].id == id) {
+
+                if(i+1<len) {
+                    return curr_game.users[i+1];
+                } else {
+                    return curr_game.users[0];
+                }
+
+            }
+
+        }
+
+    }
+
+    function createBoard(game) {
+
+        setTopMargin(50);
+
+        curr_game = game;
+
+        //the creator always moves 1st
+        curr_user_id = game.creator_id;
+
+        board = $('<div>').appendTo(container).addClass('board').attr('id', 'board');
+
+        board_obj = [];
+
+        var x = game.size_x,
+            y = game.size_y,
             i,
-            j;
+            j,
+            token_id = getGameUser(curr_user_id).token_id;
+
+        token_class = all_tokens[token_id].name;
 
         for(i=0; i<x; i++) {
 
@@ -48,6 +98,18 @@ $(function() {
 
         }
 
+        //append back to homepage link
+        container.append($('<div>').addClass('back-link').append($('<a>').text('<< Go back to home page').on('click', function() {
+
+            clearPage();
+            loadHomePage();
+
+        })));
+
+        //set left margin
+        board.css('margin-left', (board.width() - default_w * x) / 2);
+
+        console.log('Board object:');
         console.log(board_obj);
 
     }
@@ -118,7 +180,52 @@ $(function() {
 
     }*/
 
+    /*****************************************************************************/
+    /* MAKING A MOVE
+    /*****************************************************************************/
+
     function columnClickEvent(ind) {
+
+        var params = { game_id: curr_game.id, col_index: ind+1, user_id: curr_user_id, user_key: curr_user_key };
+
+        console.log(params);
+        moveToken(ind);
+        return;
+        show_preloader();
+
+        $.ajax({
+
+            url : '/makeMove',
+
+            type: 'POST',
+
+            cache: false,
+
+            data: params,
+
+            dataType : 'json',
+
+            error : function(xmlhttprequest, textstatus, message) {
+
+                hide_preloader();
+
+                createPopup('Error', 'Something went wrong on the server!', [{ txt: 'ok', action: closePopupOverlay}]);
+
+            },
+
+            success : function(move_status) {
+
+                hide_preloader();
+
+                //moveToken(ind);
+
+            }
+
+        });
+
+    }
+
+    function moveToken(ind) {
 
         var curr_col = board.find('.col:eq('+ind+')');
 
@@ -143,12 +250,13 @@ $(function() {
 
                 token_temp.remove();
 
-                var tid;
+                //NOTE: should change
+                curr_user_id = getNextUser(curr_user_id).id;
 
-                //NOTE: temporary - reset token icon and id
-                if(token_class == 'token1') { token_class = 'token2'; tid = 1; } else { token_class = 'token1'; tid = 2; }
+                token_id = getGameUser(curr_user_id).token_id;
+                token_class = all_tokens[token_id].name;
 
-                board_obj[ind][col_pos] = tid;
+                board_obj[ind][col_pos] = curr_user_id;
 
                 var new_token = $('<div>').addClass(token_cl).css({ width: default_token_w + 'px', height: default_token_h + 'px', 'margin-top': default_token_t + 'px', 'margin-left': default_token_l + 'px' });
 
@@ -158,18 +266,9 @@ $(function() {
                 curr_col.removeClass('selected');
                 columnHoverEvent(ind);
 
-                verify(ind, col_pos, tid);
-
             });
 
         }
-
-    }
-
-    function verify(col_ind, cell_ind, tid) {
-
-        //check row
-        //if(board_obj[col_ind-1][cell_ind])
 
     }
 
@@ -211,49 +310,3 @@ $(function() {
         return i-1;
 
     }
-
-    function createGame() {
-
-        var params = { username: 'tester', size_x: 7, size_y: 6, timing: null };
-
-        var validation = true;
-
-        if(validation) {
-
-            $.ajax({
-
-                url : '/createGame',
-
-                type: 'POST',
-
-                cache: false,
-
-                data: params,
-
-                dataType : 'json',
-
-                error : function(xmlhttprequest, textstatus, message) {
-                    $('#note').text('Something went wrong on the server!');
-                },
-
-                success : function(game) {
-
-                    if(true) {
-
-                        console.log("DSLKDSKL");
-                        console.log( game );
-                        createBoard(game);
-
-                    }
-
-                }
-
-            });
-
-        }
-
-    }
-
-    createGame();
-
-});

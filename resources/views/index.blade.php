@@ -21,6 +21,7 @@
         <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
         <script src="{{ URL::to('/js/custom-functions.js') }}"></script>
+        <script src="{{ URL::to('/js/board.js') }}"></script>
         <script src="{{ URL::to('/js/home.js') }}"></script>
 
         <link rel="stylesheet" type="text/css" href="{{ URL::to('/css/main.css') }}">
@@ -35,12 +36,6 @@
         <div class="main-container">
 
             <div class="game-container">
-
-                <div id="board" class="board">
-
-
-
-                </div>
 
             </div>
 

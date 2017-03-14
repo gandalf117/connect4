@@ -138,7 +138,6 @@ html, body {
 /***********************************/
 
 .board {
-    background: lavender;
     overflow: auto;
 }
 
@@ -148,18 +147,23 @@ html, body {
 }
 
 .board .col .cell:first-child {
-    margin-top: 55px;
+    margin-top: 80px;
 }
 
 .board .col .cell {
-    width: 50px;
-    height: 50px;
+    width: 75px;
+    height: 75px;
     border: 1px solid gray;
 }
 
 .token-temp {
     position: absolute;
     top: 0px;
+    cursor: pointer;
+}
+
+.back-link {
+    margin: 25px;
     cursor: pointer;
 }
 

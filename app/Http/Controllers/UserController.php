@@ -10,7 +10,7 @@ class UserController extends Controller
 
     public function getUsers() {
 
-        $users = UserModel::all();
+        $users = UserModel::with('games')->get();
 
         return response()->json($users);
 

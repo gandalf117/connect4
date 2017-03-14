@@ -1,17 +1,19 @@
-$(function() {
 
-    var container = $('.game-container'),
-        all_users = getUsersFromSession(),
+    var container,
+        all_users,
         all_users_list = {},
         all_tokens = {},
         refresh_rate = 3000,
         board_min_x = 4,
         board_max_x = 12,
         board_min_y = 4,
-        board_max_y = 12;
+        board_max_y = 12,
+        usersInterval,
+        gamesInterval;
 
-    console.log('current user session:');
-    console.log(all_users);
+    /*****************************************************************************/
+    /* UTIL FUNCTIONS
+    /*****************************************************************************/
 
     function isLoggedIn() {
 
@@ -20,11 +22,27 @@ $(function() {
 
     }
 
+    function clearPage() {
+
+        container.empty();
+        clearInterval(usersInterval);
+        clearInterval(gamesInterval);
+
+    }
+
+    function setTopMargin(margin) {
+
+        $('.main-container').css('padding-top', margin);
+
+    }
+
     /*****************************************************************************/
     /* CREATING AND LOADING THE HOME PAGE
     /*****************************************************************************/
 
     function loadHomePage() {
+
+        setTopMargin(100);
 
         var home = $('<div>').appendTo(container).addClass('home'),
             menu = $('<div>').appendTo(home).addClass('menu'),
@@ -53,12 +71,10 @@ $(function() {
         getGamesRequest();
 
         //run routine requests to update the columns in anything changes
-        setInterval(getUsersRequest, refresh_rate);
-        setInterval(getGamesRequest, refresh_rate);
+        usersInterval = setInterval(getUsersRequest, refresh_rate);
+        gamesInterval = setInterval(getGamesRequest, refresh_rate);
 
     }
-
-    loadHomePage();
 
     /*****************************************************************************/
     /* GET TOKENS
@@ -167,7 +183,7 @@ $(function() {
 
                     return function() {
 
-                        alert('starting game: ' + game.name + '=' + game.id);
+                        startTheGame(game);
 
                     }
 
@@ -176,6 +192,22 @@ $(function() {
             }
 
         }
+
+    }
+
+    function startTheGame(game) {
+
+        console.log('game here:');
+        console.log(game);
+
+        if(game.users.length < 2) {
+            createPopup('Notice', 'Can\'t start the game with less than 2 players.', [{ txt: 'ok', action: closePopupOverlay}]);
+            return;
+        }
+
+        clearPage();
+
+        createBoard(game);
 
     }
 
@@ -274,8 +306,7 @@ $(function() {
             success : function(games) {
 
                 //hide_preloader();
-console.log('gameeee');
-console.log(games);
+
                 if(games) {
 
                     var len = games.length,
@@ -592,7 +623,7 @@ console.log(games);
         if(validation) {
 
             var params = { user_id: user_id, name: name, x: x, y: y };
-            console.log('created game pppp');
+            console.log('created game params:');
             console.log( params );
             show_preloader();
 
@@ -761,13 +792,13 @@ console.log(games);
 
         } else {
 
-            users = null;
+            users = {};
 
         }
 
-        if(users) { enableLogoutBtn(); enableCreateGameBtn(); }
+        if(users && !$.isEmptyObject(users)) { enableLogoutBtn(); enableCreateGameBtn(); }
 
-        return {};
+        return users;
 
     }
 
@@ -823,4 +854,12 @@ console.log(games);
         if(!$('#jgame_btn').hasClass('disabled')) { $('#jgame_btn').addClass('disabled').off('click'); }
     }
 
-});
+    $(function() {
+
+        container = $('.game-container');
+
+        all_users = getUsersFromSession();
+
+        loadHomePage();
+
+    });
